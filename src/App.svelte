@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import { Volume2, VolumeX, RotateCcw, Share2, Waves } from 'lucide-svelte';
+  import { Volume2, VolumeX, RotateCcw, Share2, Waves, Moon, Sun } from 'lucide-svelte';
   import TimerHero from './lib/TimerHero.svelte';
   import QuickSummary from './lib/QuickSummary.svelte';
   import ContractionList from './lib/ContractionList.svelte';
@@ -11,6 +11,7 @@
   const STORAGE_KEY = 'swell_contractions';
   const ACTIVE_KEY = 'swell_active_timer';
   const SOUND_KEY = 'swell_sound_pref';
+  const DIM_KEY = 'swell_dim_pref';
 
   // Safe State initialization from localStorage
   function getStoredContractions(): Contraction[] {
@@ -32,7 +33,6 @@
       if (!data) return null;
       const num = Number(data);
       if (Number.isFinite(num) && num > 0 && num <= Date.now()) {
-        // Only restore if active contraction started less than 30 minutes ago (prevent stale timers)
         if (Date.now() - num < 30 * 60 * 1000) {
           return num;
         }
@@ -53,6 +53,16 @@
     }
   }
 
+  function getStoredDimPref(): boolean {
+    if (typeof window === 'undefined') return false;
+    try {
+      const data = localStorage.getItem(DIM_KEY);
+      return data === 'true';
+    } catch {
+      return false;
+    }
+  }
+
   // Core state (persisted across refreshes)
   let contractions = $state<Contraction[]>(getStoredContractions());
   let activeStartTime = $state<number | null>(getStoredActiveTime());
@@ -63,6 +73,7 @@
   // App UI state
   let showGuidelines = $state<boolean>(false);
   let soundOn = $state<boolean>(getStoredSoundPref());
+  let dimMode = $state<boolean>(getStoredDimPref());
   let showCopiedToast = $state<boolean>(false);
   let showResetModal = $state<boolean>(false);
 
@@ -97,6 +108,21 @@
       audio.soundEnabled = soundOn;
     } catch {
       // LocalStorage might be disabled or full
+    }
+  });
+
+  $effect(() => {
+    try {
+      localStorage.setItem(DIM_KEY, String(dimMode));
+      if (typeof document !== 'undefined') {
+        if (dimMode) {
+          document.body.classList.add('dim-mode');
+        } else {
+          document.body.classList.remove('dim-mode');
+        }
+      }
+    } catch {
+      // ignore
     }
   });
 
@@ -258,6 +284,10 @@
     soundOn = !soundOn;
   }
 
+  function toggleDim() {
+    dimMode = !dimMode;
+  }
+
   async function copySummary() {
     if (contractions.length === 0) return;
     
@@ -300,6 +330,9 @@
 
   onMount(() => {
     audio.soundEnabled = soundOn;
+    if (dimMode && typeof document !== 'undefined') {
+      document.body.classList.add('dim-mode');
+    }
     if (activeStartTime) {
       currentDuration = Math.max(0, Math.floor((Date.now() - activeStartTime) / 1000));
       startTicker();
@@ -320,7 +353,7 @@
   });
 </script>
 
-<div class="min-h-screen flex flex-col justify-between bg-[#FAF7F2] text-[#3D3A37] selection:bg-rose-100">
+<div class="min-h-screen flex flex-col justify-between transition-colors duration-400 {dimMode ? 'bg-[#1A1817] text-[#E6DFD5]' : 'bg-[#FAF7F2] text-[#3D3A37]'} selection:bg-rose-100">
   <!-- Header / Navigation Bar -->
   <header class="w-full max-w-xl mx-auto px-4 py-4 sm:py-6 flex items-center justify-between">
     <div class="flex items-center gap-2.5">
@@ -328,17 +361,31 @@
         <Waves class="w-4 h-4" />
       </div>
       <div>
-        <h1 class="text-lg font-semibold tracking-tight text-stone-800 leading-none">Swell</h1>
-        <span class="text-[10px] text-stone-400 font-medium tracking-wide uppercase">Contraction Timer</span>
+        <h1 class="text-lg font-semibold tracking-tight {dimMode ? 'text-[#FAF7F2]' : 'text-stone-800'} leading-none">Swell</h1>
+        <span class="text-[10px] {dimMode ? 'text-stone-400' : 'text-stone-400'} font-medium tracking-wide uppercase">Contraction Timer</span>
       </div>
     </div>
 
     <!-- Action icons -->
     <div class="flex items-center gap-1.5">
+      <!-- Dim / Candlelight Mode Toggle -->
+      <button
+        onclick={toggleDim}
+        class="p-2 rounded-2xl border transition-colors cursor-pointer {dimMode ? 'bg-stone-800 border-stone-700 text-amber-300 hover:bg-stone-700' : 'bg-white/70 border-stone-200/80 text-stone-600 hover:text-stone-900'}"
+        title={dimMode ? 'Switch to daylight theme' : 'Switch to candlelight night mode'}
+        aria-label="Toggle dim mode"
+      >
+        {#if dimMode}
+          <Sun class="w-4 h-4" />
+        {:else}
+          <Moon class="w-4 h-4" />
+        {/if}
+      </button>
+
       <!-- Sound toggle -->
       <button
         onclick={toggleSound}
-        class="p-2 rounded-2xl bg-white/70 border border-stone-200/80 text-stone-600 hover:text-stone-900 transition-colors cursor-pointer"
+        class="p-2 rounded-2xl border transition-colors cursor-pointer {dimMode ? 'bg-stone-800 border-stone-700 text-stone-300 hover:bg-stone-700' : 'bg-white/70 border-stone-200/80 text-stone-600 hover:text-stone-900'}"
         title={soundOn ? 'Mute soothing chimes' : 'Enable chimes'}
         aria-label="Toggle chime audio"
       >
@@ -353,7 +400,7 @@
       {#if contractions.length > 0}
         <button
           onclick={copySummary}
-          class="p-2 rounded-2xl bg-white/70 border border-stone-200/80 text-stone-600 hover:text-stone-900 transition-colors cursor-pointer"
+          class="p-2 rounded-2xl border transition-colors cursor-pointer {dimMode ? 'bg-stone-800 border-stone-700 text-stone-300 hover:bg-stone-700' : 'bg-white/70 border-stone-200/80 text-stone-600 hover:text-stone-900'}"
           title="Copy log to share with midwife/doctor"
           aria-label="Copy summary"
         >
@@ -365,7 +412,7 @@
       {#if contractions.length > 0 || isActive}
         <button
           onclick={() => showResetModal = true}
-          class="p-2 rounded-2xl bg-white/70 border border-stone-200/80 text-stone-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+          class="p-2 rounded-2xl border transition-colors cursor-pointer {dimMode ? 'bg-stone-800 border-stone-700 text-stone-400 hover:text-rose-400' : 'bg-white/70 border-stone-200/80 text-stone-400 hover:text-rose-600 hover:bg-rose-50'}"
           title="Reset session"
           aria-label="Reset session"
         >
@@ -403,11 +450,11 @@
   </main>
 
   <!-- Gentle Footer -->
-  <footer class="w-full text-center py-6 text-xs text-stone-400 border-t border-[#EBE1D8]/60 bg-[#FAF7F2]">
+  <footer class="w-full text-center py-6 text-xs {dimMode ? 'text-stone-500 border-stone-800 bg-[#1A1817]' : 'text-stone-400 border-[#EBE1D8]/60 bg-[#FAF7F2]'} border-t">
     <div class="flex items-center justify-center gap-1.5">
       <span>Designed with care for your labor journey</span>
       <span>•</span>
-      <button onclick={() => showGuidelines = true} class="hover:text-stone-600 underline cursor-pointer">
+      <button onclick={() => showGuidelines = true} class="hover:underline cursor-pointer">
         Labor Guide
       </button>
     </div>
@@ -422,22 +469,22 @@
   <!-- Explicit Clear Confirmation Modal -->
   {#if showResetModal}
     <div 
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
       role="dialog"
       aria-modal="true"
       tabindex="-1"
       onclick={(e) => { if (e.target === e.currentTarget) showResetModal = false; }}
       onkeydown={(e) => { if (e.key === 'Escape') showResetModal = false; }}
     >
-      <div class="bg-[#FAF7F2] max-w-sm w-full rounded-3xl p-6 shadow-2xl border border-[#EBE1D8] text-[#3D3A37] text-center">
-        <h3 class="text-lg font-semibold text-stone-800">Clear Current Session?</h3>
-        <p class="text-xs sm:text-sm text-stone-600 mt-2">
+      <div class="{dimMode ? 'bg-stone-900 border-stone-800 text-[#E6DFD5]' : 'bg-[#FAF7F2] border-[#EBE1D8] text-[#3D3A37]'} max-w-sm w-full rounded-3xl p-6 shadow-2xl border text-center">
+        <h3 class="text-lg font-semibold {dimMode ? 'text-stone-100' : 'text-stone-800'}">Clear Current Session?</h3>
+        <p class="text-xs sm:text-sm {dimMode ? 'text-stone-400' : 'text-stone-600'} mt-2">
           This will permanently delete all {contractions.length} recorded surges. This action cannot be undone.
         </p>
         <div class="mt-6 flex items-center justify-end gap-2.5">
           <button
             onclick={() => showResetModal = false}
-            class="flex-1 py-2.5 px-4 rounded-xl border border-stone-300 text-stone-700 text-xs sm:text-sm font-medium hover:bg-stone-100 transition-colors cursor-pointer"
+            class="flex-1 py-2.5 px-4 rounded-xl border {dimMode ? 'border-stone-700 text-stone-300 hover:bg-stone-800' : 'border-stone-300 text-stone-700 hover:bg-stone-100'} text-xs sm:text-sm font-medium transition-colors cursor-pointer"
           >
             Keep Data
           </button>

@@ -22,6 +22,12 @@
     -webkit-tap-highlight-color: transparent;
     user-select: none;
     -webkit-user-select: none;
+    transition: background-color 0.4s ease, color 0.4s ease;
+  }
+
+  body.dim-mode {
+    background-color: #1A1817;
+    color: #E6DFD5;
   }
 }
 
