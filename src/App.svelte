@@ -425,23 +425,24 @@
 
 <div class="min-h-screen flex flex-col justify-between transition-colors duration-400 {dimMode ? 'bg-[#1A1817] text-[#E6DFD5]' : 'bg-[#FAF7F2] text-[#3D3A37]'} selection:bg-rose-100">
   <!-- Header / Navigation Bar -->
-  <header class="w-full max-w-xl mx-auto px-4 py-4 sm:py-6 flex items-center justify-between">
+  <header class="w-full max-w-xl mx-auto px-4 py-4 sm:py-6 flex flex-col xs:flex-row items-center justify-between gap-3">
+    <!-- Logo & Title -->
     <div class="flex items-center gap-2.5">
-      <div class="w-8 h-8 rounded-2xl bg-[#E07A5F] flex items-center justify-center text-white shadow-xs">
+      <div class="w-8 h-8 rounded-2xl bg-[#E07A5F] flex items-center justify-center text-white shadow-xs shrink-0">
         <Waves class="w-4 h-4" />
       </div>
-      <div>
+      <div class="text-left">
         <h1 class="text-lg font-semibold tracking-tight {dimMode ? 'text-[#FAF7F2]' : 'text-stone-800'} leading-none">Swell</h1>
         <span class="text-[10px] {dimMode ? 'text-stone-300' : 'text-stone-400'} font-medium tracking-wide uppercase">Contraction Timer</span>
       </div>
     </div>
 
-    <!-- Action icons -->
-    <div class="flex items-center gap-1.5">
+    <!-- Action icons toolbar (scrollable or wrapped neatly on narrow screens) -->
+    <div class="flex items-center gap-1 sm:gap-1.5 overflow-x-auto max-w-full pb-1 xs:pb-0 scrollbar-none">
       <!-- Dim / Candlelight Mode Toggle -->
       <button
         onclick={toggleDim}
-        class="min-w-[44px] min-h-[44px] p-2 rounded-2xl border transition-colors cursor-pointer flex items-center justify-center {dimMode ? 'bg-stone-800 border-stone-700 text-amber-300 hover:bg-stone-700' : 'bg-white/70 border-stone-200/80 text-stone-600 hover:text-stone-900'}"
+        class="min-w-[40px] xs:min-w-[44px] min-h-[40px] xs:min-h-[44px] p-2 rounded-2xl border transition-colors cursor-pointer flex items-center justify-center shrink-0 {dimMode ? 'bg-stone-800 border-stone-700 text-amber-300 hover:bg-stone-700' : 'bg-white/70 border-stone-200/80 text-stone-600 hover:text-stone-900'}"
         title={dimMode ? 'Switch to daylight theme' : 'Switch to candlelight night mode'}
         aria-label="Toggle dim mode"
       >
@@ -455,7 +456,7 @@
       <!-- Sound toggle -->
       <button
         onclick={toggleSound}
-        class="min-w-[44px] min-h-[44px] p-2 rounded-2xl border transition-colors cursor-pointer flex items-center justify-center {dimMode ? 'bg-stone-800 border-stone-700 text-stone-300 hover:bg-stone-700' : 'bg-white/70 border-stone-200/80 text-stone-600 hover:text-stone-900'}"
+        class="min-w-[40px] xs:min-w-[44px] min-h-[40px] xs:min-h-[44px] p-2 rounded-2xl border transition-colors cursor-pointer flex items-center justify-center shrink-0 {dimMode ? 'bg-stone-800 border-stone-700 text-stone-300 hover:bg-stone-700' : 'bg-white/70 border-stone-200/80 text-stone-600 hover:text-stone-900'}"
         title={soundOn ? 'Mute soothing chimes' : 'Enable chimes'}
         aria-label="Toggle chime audio"
       >
@@ -470,7 +471,7 @@
       {#if contractions.length > 0 || waterBreak}
         <button
           onclick={copySummary}
-          class="min-w-[44px] min-h-[44px] p-2 rounded-2xl border transition-colors cursor-pointer flex items-center justify-center {dimMode ? 'bg-stone-800 border-stone-700 text-stone-300 hover:bg-stone-700' : 'bg-white/70 border-stone-200/80 text-stone-600 hover:text-stone-900'}"
+          class="min-w-[40px] xs:min-w-[44px] min-h-[40px] xs:min-h-[44px] p-2 rounded-2xl border transition-colors cursor-pointer flex items-center justify-center shrink-0 {dimMode ? 'bg-stone-800 border-stone-700 text-stone-300 hover:bg-stone-700' : 'bg-white/70 border-stone-200/80 text-stone-600 hover:text-stone-900'}"
           title="Copy log to share with midwife/doctor"
           aria-label="Copy summary"
         >
@@ -479,7 +480,7 @@
 
         <button
           onclick={downloadCSV}
-          class="min-w-[44px] min-h-[44px] p-2 rounded-2xl border transition-colors cursor-pointer flex items-center justify-center {dimMode ? 'bg-stone-800 border-stone-700 text-stone-300 hover:bg-stone-700' : 'bg-white/70 border-stone-200/80 text-stone-600 hover:text-stone-900'}"
+          class="min-w-[40px] xs:min-w-[44px] min-h-[40px] xs:min-h-[44px] p-2 rounded-2xl border transition-colors cursor-pointer flex items-center justify-center shrink-0 {dimMode ? 'bg-stone-800 border-stone-700 text-stone-300 hover:bg-stone-700' : 'bg-white/70 border-stone-200/80 text-stone-600 hover:text-stone-900'}"
           title="Download CSV spreadsheet report"
           aria-label="Download CSV"
         >
@@ -491,7 +492,7 @@
       {#if contractions.length > 0 || isActive || waterBreak}
         <button
           onclick={() => showResetModal = true}
-          class="min-w-[44px] min-h-[44px] p-2 rounded-2xl border transition-colors cursor-pointer flex items-center justify-center {dimMode ? 'bg-stone-800 border-stone-700 text-stone-400 hover:text-rose-400' : 'bg-white/70 border-stone-200/80 text-stone-400 hover:text-rose-600 hover:bg-rose-50'}"
+          class="min-w-[40px] xs:min-w-[44px] min-h-[40px] xs:min-h-[44px] p-2 rounded-2xl border transition-colors cursor-pointer flex items-center justify-center shrink-0 {dimMode ? 'bg-stone-800 border-stone-700 text-stone-400 hover:text-rose-400' : 'bg-white/70 border-stone-200/80 text-stone-400 hover:text-rose-600 hover:bg-rose-50'}"
           title="Reset session"
           aria-label="Reset session"
         >
