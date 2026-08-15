@@ -65,7 +65,7 @@
       <button
         onclick={() => { if (isExpanded) { isExpanded = false; } else { openEditor(); } }}
         aria-expanded={isExpanded}
-        class="text-xs font-medium px-3 py-1.5 rounded-xl border transition-colors cursor-pointer {event 
+        class="min-h-[44px] text-xs font-medium px-3 py-2 rounded-xl border transition-colors cursor-pointer flex items-center justify-center {event 
           ? (dimMode ? 'border-sky-800/80 text-sky-300 bg-sky-950/80 hover:bg-sky-900/80' : 'border-sky-200 text-sky-700 bg-sky-50 hover:bg-sky-100') 
           : (dimMode ? 'border-stone-700 text-stone-300 bg-stone-800 hover:bg-stone-700' : 'border-stone-200 text-stone-600 hover:bg-stone-100')}"
       >
@@ -96,7 +96,7 @@
             ] as opt}
               <button
                 onclick={() => selectedColor = opt.key as FluidColor}
-                class="p-2 rounded-xl text-left border transition-all cursor-pointer {selectedColor === opt.key 
+                class="min-h-[44px] p-2 rounded-xl text-left border transition-all cursor-pointer {selectedColor === opt.key 
                   ? (dimMode ? 'border-sky-500 bg-sky-950 text-sky-200 font-medium' : 'border-sky-500 bg-sky-50/80 text-sky-900 font-medium') 
                   : (dimMode ? 'border-stone-800 bg-stone-800/80 text-stone-300 hover:bg-stone-800' : 'border-stone-200 bg-white text-stone-600 hover:bg-stone-50')}"
               >
@@ -117,7 +117,7 @@
             bind:value={noteText}
             placeholder="e.g. big gush while standing, odorless..."
             maxlength="280"
-            class="w-full text-xs px-3 py-2 rounded-xl border transition-colors {dimMode ? 'bg-stone-800/90 text-stone-100 border-stone-700 placeholder:text-stone-500 focus:border-sky-400' : 'bg-white text-stone-800 border-stone-200 placeholder:text-stone-400 focus:border-sky-500'} focus:outline-none"
+            class="w-full min-h-[44px] text-xs px-3 py-2 rounded-xl border transition-colors {dimMode ? 'bg-stone-800/90 text-stone-100 border-stone-700 placeholder:text-stone-500 focus:border-sky-400' : 'bg-white text-stone-800 border-stone-200 placeholder:text-stone-400 focus:border-sky-500'} focus:outline-none"
           />
         </div>
 
@@ -125,7 +125,7 @@
           {#if event}
             <button
               onclick={removeWaterBreak}
-              class="text-xs text-rose-500 hover:text-rose-400 flex items-center gap-1 cursor-pointer"
+              class="min-h-[44px] text-xs text-rose-500 hover:text-rose-400 flex items-center gap-1 cursor-pointer px-2"
             >
               <Trash2 class="w-3.5 h-3.5" /> Remove entry
             </button>
@@ -136,13 +136,13 @@
           <div class="flex items-center gap-2">
             <button
               onclick={() => isExpanded = false}
-              class="text-xs px-3 py-1.5 rounded-xl border transition-colors cursor-pointer {dimMode ? 'border-stone-700 text-stone-400 hover:bg-stone-800 hover:text-stone-200' : 'border-stone-200 text-stone-500 hover:bg-stone-100'}"
+              class="min-h-[44px] text-xs px-3 py-2 rounded-xl border transition-colors cursor-pointer flex items-center justify-center {dimMode ? 'border-stone-700 text-stone-400 hover:bg-stone-800 hover:text-stone-200' : 'border-stone-200 text-stone-500 hover:bg-stone-100'}"
             >
               Cancel
             </button>
             <button
               onclick={recordWaterBreak}
-              class="text-xs px-4 py-1.5 rounded-xl bg-sky-600 text-white font-medium hover:bg-sky-500 transition-colors shadow-xs flex items-center gap-1 cursor-pointer"
+              class="min-h-[44px] text-xs px-4 py-2 rounded-xl bg-sky-600 text-white font-medium hover:bg-sky-500 transition-colors shadow-xs flex items-center justify-center gap-1 cursor-pointer"
             >
               <Check class="w-3.5 h-3.5" /> Save Record
             </button>

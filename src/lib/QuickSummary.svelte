@@ -37,7 +37,7 @@
       <span class="text-xl sm:text-2xl font-semibold {dimMode ? 'text-stone-100' : 'text-stone-800'}">
         {stats.avgIntervalSeconds > 0 ? formatInterval(stats.avgIntervalSeconds) : '—'}
       </span>
-      <span class="text-[10px] {dimMode ? 'text-stone-300' : 'text-stone-400'} mt-0.5">avg apart</span>
+      <span class="text-[10px] {dimMode ? 'text-stone-300' : 'text-stone-600'} mt-0.5">avg apart</span>
     </div>
 
     <!-- Duration -->
@@ -49,7 +49,7 @@
       <span class="text-xl sm:text-2xl font-semibold {dimMode ? 'text-stone-100' : 'text-stone-800'}">
         {stats.avgDurationSeconds > 0 ? formatDuration(stats.avgDurationSeconds) : '—'}
       </span>
-      <span class="text-[10px] {dimMode ? 'text-stone-300' : 'text-stone-400'} mt-0.5">avg length</span>
+      <span class="text-[10px] {dimMode ? 'text-stone-300' : 'text-stone-600'} mt-0.5">avg length</span>
     </div>
 
     <!-- Count -->
@@ -61,7 +61,7 @@
       <span class="text-xl sm:text-2xl font-semibold {dimMode ? 'text-stone-100' : 'text-stone-800'}">
         {stats.countLastHour}
       </span>
-      <span class="text-[10px] {dimMode ? 'text-stone-300' : 'text-stone-400'} mt-0.5">
+      <span class="text-[10px] {dimMode ? 'text-stone-300' : 'text-stone-600'} mt-0.5">
         ({totalCount} total)
       </span>
     </div>

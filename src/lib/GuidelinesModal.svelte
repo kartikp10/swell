@@ -29,7 +29,7 @@
         </div>
         <button 
           onclick={onclose}
-          class="p-2 rounded-full {dimMode ? 'hover:bg-stone-800 text-stone-400 hover:text-stone-200' : 'hover:bg-[#EBE1D8] text-stone-500 hover:text-stone-800'} transition-colors cursor-pointer"
+          class="min-w-[44px] min-h-[44px] p-2 rounded-full flex items-center justify-center {dimMode ? 'hover:bg-stone-800 text-stone-400 hover:text-stone-200' : 'hover:bg-[#EBE1D8] text-stone-500 hover:text-stone-800'} transition-colors cursor-pointer"
           aria-label="Close modal"
         >
           <X class="w-5 h-5" />
@@ -40,7 +40,7 @@
       <div class="flex items-center gap-1 p-1 rounded-2xl mb-5 {dimMode ? 'bg-stone-800/80 border border-stone-700/60' : 'bg-stone-200/60'}">
         <button
           onclick={() => activeTab = '511'}
-          class="flex-1 py-2 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer {activeTab === '511' 
+          class="flex-1 min-h-[44px] py-2 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center justify-center {activeTab === '511' 
             ? (dimMode ? 'bg-stone-700 text-stone-100 shadow-xs' : 'bg-white text-stone-900 shadow-xs') 
             : (dimMode ? 'text-stone-400 hover:text-stone-200' : 'text-stone-600 hover:text-stone-900')}"
         >
@@ -48,7 +48,7 @@
         </button>
         <button
           onclick={() => activeTab = 'breathing'}
-          class="flex-1 py-2 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 {activeTab === 'breathing' 
+          class="flex-1 min-h-[44px] py-2 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 {activeTab === 'breathing' 
             ? (dimMode ? 'bg-stone-700 text-stone-100 shadow-xs' : 'bg-white text-stone-900 shadow-xs') 
             : (dimMode ? 'text-stone-400 hover:text-stone-200' : 'text-stone-600 hover:text-stone-900')}"
         >
@@ -141,7 +141,7 @@
       <div class="mt-6">
         <button
           onclick={onclose}
-          class="w-full py-3 px-5 rounded-2xl bg-[#E07A5F] hover:bg-[#D05B43] text-white font-medium transition-all shadow-sm active:scale-[0.99] cursor-pointer"
+          class="w-full min-h-[44px] py-3 px-5 rounded-2xl bg-[#E07A5F] hover:bg-[#D05B43] text-white font-medium transition-all shadow-sm active:scale-[0.99] cursor-pointer flex items-center justify-center"
         >
           Got It
         </button>

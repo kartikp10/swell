@@ -88,10 +88,11 @@
 
           <!-- Intensity selector & Note snippet -->
           <div class="mt-3 pt-2 flex flex-wrap items-center justify-between gap-2">
-            <!-- Intensity Buttons -->
-            <div class="flex items-center gap-1 {dimMode ? 'bg-stone-800/80 border-stone-700/60' : 'bg-stone-50 border-stone-100'} p-1 rounded-xl border">
+            <!-- Intensity Buttons Group -->
+            <div role="group" aria-label="Surge intensity" class="flex items-center gap-1 {dimMode ? 'bg-stone-800/80 border-stone-700/60' : 'bg-stone-50 border-stone-100'} p-1 rounded-xl border">
               <button
                 onclick={() => onUpdateIntensity(item.id, 'mild')}
+                aria-pressed={item.intensity === 'mild'}
                 class="min-h-[44px] px-3 py-2 rounded-lg text-xs flex items-center justify-center gap-1 transition-all cursor-pointer {item.intensity === 'mild' ? (dimMode ? 'bg-emerald-950 text-emerald-300 font-medium' : 'bg-emerald-100 text-emerald-800 font-medium') : (dimMode ? 'text-stone-400 hover:text-stone-200' : 'text-stone-400 hover:text-stone-700')}"
                 title="Mild intensity"
                 aria-label="Mark intensity as mild"
@@ -102,6 +103,7 @@
 
               <button
                 onclick={() => onUpdateIntensity(item.id, 'moderate')}
+                aria-pressed={item.intensity === 'moderate'}
                 class="min-h-[44px] px-3 py-2 rounded-lg text-xs flex items-center justify-center gap-1 transition-all cursor-pointer {item.intensity === 'moderate' ? (dimMode ? 'bg-amber-950 text-amber-300 font-medium' : 'bg-amber-100 text-amber-800 font-medium') : (dimMode ? 'text-stone-400 hover:text-stone-200' : 'text-stone-400 hover:text-stone-700')}"
                 title="Moderate intensity"
                 aria-label="Mark intensity as moderate"
@@ -112,6 +114,7 @@
 
               <button
                 onclick={() => onUpdateIntensity(item.id, 'strong')}
+                aria-pressed={item.intensity === 'strong'}
                 class="min-h-[44px] px-3 py-2 rounded-lg text-xs flex items-center justify-center gap-1 transition-all cursor-pointer {item.intensity === 'strong' ? (dimMode ? 'bg-rose-950 text-rose-300 font-medium' : 'bg-rose-100 text-rose-800 font-medium') : (dimMode ? 'text-stone-400 hover:text-stone-200' : 'text-stone-400 hover:text-stone-700')}"
                 title="Strong intensity"
                 aria-label="Mark intensity as strong"

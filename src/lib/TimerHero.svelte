@@ -89,7 +89,7 @@
     <div class="mt-4 flex items-center gap-2">
       <button
         onclick={onCancel}
-        class="text-xs {dimMode ? 'text-stone-400 hover:text-stone-200 hover:bg-stone-800' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-200/50'} px-3 py-1.5 rounded-full transition-colors flex items-center gap-1 cursor-pointer"
+        class="min-h-[44px] text-xs {dimMode ? 'text-stone-400 hover:text-stone-200 hover:bg-stone-800' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-200/50'} px-3 py-2 rounded-full transition-colors flex items-center justify-center gap-1 cursor-pointer"
       >
         <X class="w-3.5 h-3.5" />
         Discard accidental tap

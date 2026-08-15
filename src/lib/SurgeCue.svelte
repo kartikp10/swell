@@ -40,7 +40,7 @@
 </script>
 
 {#if isActive}
-  <div class="mt-4 px-4 py-2 rounded-2xl border flex items-center gap-2 transition-all animate-fadeIn {dimMode ? 'bg-stone-900/90 border-stone-800 text-stone-200' : 'bg-white/90 border-[#EBE1D8] text-stone-800'} shadow-xs">
+  <div role="status" aria-live="polite" class="mt-4 px-4 py-2 rounded-2xl border flex items-center gap-2 transition-all animate-fadeIn {dimMode ? 'bg-stone-900/90 border-stone-800 text-stone-200' : 'bg-white/90 border-[#EBE1D8] text-stone-800'} shadow-xs">
     <Wind class="w-4 h-4 text-[#E07A5F] shrink-0" />
     <p class="text-xs sm:text-sm font-medium tracking-wide">
       {COACHING_CUES[currentIndex]}

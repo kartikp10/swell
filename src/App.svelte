@@ -51,7 +51,8 @@
       if (!data) return null;
       const num = Number(data);
       if (Number.isFinite(num) && num > 0 && num <= Date.now()) {
-        if (Date.now() - num < 30 * 60 * 1000) {
+        // Extend threshold to 12 hours so long sessions/surges aren't prematurely discarded
+        if (Date.now() - num < 12 * 60 * 60 * 1000) {
           return num;
         }
       }
@@ -207,6 +208,13 @@
       } catch {
         // WakeLock request rejected or unsupported
       }
+    }
+  }
+
+  // Handle visibility change to re-acquire wake lock if returning to active timer
+  function handleVisibilityChange() {
+    if (typeof document !== 'undefined' && document.visibilityState === 'visible' && isActive) {
+      requestWakeLock();
     }
   }
 
@@ -393,11 +401,18 @@
       startTicker();
     }
     startIntervalTicker();
+
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+    }
   });
 
   onDestroy(() => {
     stopTicker();
     if (intervalTimer) clearInterval(intervalTimer);
+    if (typeof document !== 'undefined') {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    }
     if (wakeLockSentinel) {
       try {
         wakeLockSentinel.release();
@@ -529,7 +544,7 @@
   </main>
 
   <!-- Gentle Footer -->
-  <footer class="w-full text-center py-6 text-xs {dimMode ? 'text-stone-500 border-stone-800 bg-[#1A1817]' : 'text-stone-400 border-[#EBE1D8]/60 bg-[#FAF7F2]'} border-t">
+  <footer class="w-full text-center py-6 text-xs {dimMode ? 'text-stone-400 border-stone-800 bg-[#1A1817]' : 'text-stone-500 border-[#EBE1D8]/60 bg-[#FAF7F2]'} border-t">
     <div class="flex items-center justify-center gap-1.5">
       <span>Designed with care for your labor journey</span>
       <span>•</span>

@@ -60,7 +60,11 @@
     <span class="text-[10px] lowercase text-stone-400 opacity-60 group-hover:opacity-100 transition-opacity">(tap to change)</span>
   </div>
 
-  <div class="relative px-6 py-2 transition-transform duration-300 {isClicked ? 'scale-105' : 'scale-100'}">
+  <div 
+    aria-live="polite" 
+    aria-atomic="true" 
+    class="relative px-6 py-2 transition-transform duration-300 {isClicked ? 'scale-105' : 'scale-100'}"
+  >
     <!-- Decorative Opening Quote -->
     <Quote class="w-4 h-4 absolute left-1 top-0 rotate-180 {dimMode ? 'text-[#E07A5F]/60' : 'text-[#E07A5F]/40'} pointer-events-none" />
     
