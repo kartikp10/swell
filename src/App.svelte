@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import { Volume2, VolumeX, RotateCcw, Sparkles, Share2, Waves } from 'lucide-svelte';
+  import { Volume2, VolumeX, RotateCcw, Share2, Waves } from 'lucide-svelte';
   import TimerHero from './lib/TimerHero.svelte';
   import QuickSummary from './lib/QuickSummary.svelte';
   import ContractionList from './lib/ContractionList.svelte';
@@ -8,20 +8,86 @@
   import { calculateStats, type Contraction } from './types';
   import { audio } from './lib/audio';
 
-  // Core state (in-memory / stateless design)
-  let contractions = $state<Contraction[]>([]);
-  let isActive = $state<boolean>(false);
-  let activeStartTime = $state<number | null>(null);
+  const STORAGE_KEY = 'swell_contractions';
+  const ACTIVE_KEY = 'swell_active_timer';
+  const SOUND_KEY = 'swell_sound_pref';
+
+  // State initialization from localStorage
+  function getStoredContractions(): Contraction[] {
+    if (typeof window === 'undefined') return [];
+    try {
+      const data = localStorage.getItem(STORAGE_KEY);
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function getStoredActiveTime(): number | null {
+    if (typeof window === 'undefined') return null;
+    try {
+      const data = localStorage.getItem(ACTIVE_KEY);
+      return data ? Number(data) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function getStoredSoundPref(): boolean {
+    if (typeof window === 'undefined') return true;
+    try {
+      const data = localStorage.getItem(SOUND_KEY);
+      return data !== null ? data === 'true' : true;
+    } catch {
+      return true;
+    }
+  }
+
+  // Core state (persisted across refreshes)
+  let contractions = $state<Contraction[]>(getStoredContractions());
+  let activeStartTime = $state<number | null>(getStoredActiveTime());
+  const isActive = $derived(activeStartTime !== null);
   let currentDuration = $state<number>(0);
   let timeSinceLast = $state<number | null>(null);
   
   // App UI state
   let showGuidelines = $state<boolean>(false);
-  let soundOn = $state<boolean>(true);
+  let soundOn = $state<boolean>(getStoredSoundPref());
   let showCopiedToast = $state<boolean>(false);
+  let showResetModal = $state<boolean>(false);
 
   let timerInterval: ReturnType<typeof setInterval> | null = null;
   let intervalTimer: ReturnType<typeof setInterval> | null = null;
+
+  // Sync state to localStorage whenever it changes
+  $effect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(contractions));
+    } catch {
+      // ignore storage errors
+    }
+  });
+
+  $effect(() => {
+    try {
+      if (activeStartTime !== null) {
+        localStorage.setItem(ACTIVE_KEY, String(activeStartTime));
+      } else {
+        localStorage.removeItem(ACTIVE_KEY);
+      }
+    } catch {
+      // ignore storage errors
+    }
+  });
+
+  $effect(() => {
+    try {
+      localStorage.setItem(SOUND_KEY, String(soundOn));
+      audio.soundEnabled = soundOn;
+    } catch {
+      // ignore storage errors
+    }
+  });
 
   // Derived rolling statistics
   const stats = $derived(calculateStats(contractions));
@@ -46,14 +112,19 @@
   // Ticking time since previous contraction started
   function startIntervalTicker() {
     if (intervalTimer) clearInterval(intervalTimer);
+    updateIntervalDisplay();
     intervalTimer = setInterval(() => {
-      if (contractions.length > 0) {
-        const lastStart = contractions[0].startTime;
-        timeSinceLast = Math.max(0, Math.floor((Date.now() - lastStart) / 1000));
-      } else {
-        timeSinceLast = null;
-      }
+      updateIntervalDisplay();
     }, 1000);
+  }
+
+  function updateIntervalDisplay() {
+    if (contractions.length > 0) {
+      const lastStart = contractions[0].startTime;
+      timeSinceLast = Math.max(0, Math.floor((Date.now() - lastStart) / 1000));
+    } else {
+      timeSinceLast = null;
+    }
   }
 
   // Primary Action: Single button start / stop toggle
@@ -62,7 +133,6 @@
 
     if (!isActive) {
       // START contraction
-      isActive = true;
       activeStartTime = now;
       currentDuration = 0;
       startTicker();
@@ -83,7 +153,7 @@
       }
 
       const newContraction: Contraction = {
-        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+        id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
         startTime: activeStartTime,
         endTime,
         durationSeconds,
@@ -93,10 +163,10 @@
       // Newest first
       contractions = [newContraction, ...contractions];
 
-      isActive = false;
       activeStartTime = null;
       currentDuration = 0;
       stopTicker();
+      updateIntervalDisplay();
 
       audio.playEndChime();
       audio.vibrate([40, 60, 40]);
@@ -105,7 +175,6 @@
 
   // Cancel running timer (accidental tap)
   function handleCancel() {
-    isActive = false;
     activeStartTime = null;
     currentDuration = 0;
     stopTicker();
@@ -130,6 +199,7 @@
     }
 
     contractions = [...updated];
+    updateIntervalDisplay();
   }
 
   function handleUpdateIntensity(id: string, intensity: 'mild' | 'moderate' | 'strong') {
@@ -140,25 +210,29 @@
     contractions = contractions.map(c => c.id === id ? { ...c, notes } : c);
   }
 
-  function handleReset() {
-    if (contractions.length === 0 && !isActive) return;
-    if (confirm('Are you sure you want to clear your current session?')) {
-      handleCancel();
-      contractions = [];
-      timeSinceLast = null;
+  // Explicit user confirmation to clear session
+  function confirmReset() {
+    handleCancel();
+    contractions = [];
+    timeSinceLast = null;
+    showResetModal = false;
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(ACTIVE_KEY);
+    } catch {
+      // ignore
     }
   }
 
   function toggleSound() {
     soundOn = !soundOn;
-    audio.soundEnabled = soundOn;
   }
 
   function copySummary() {
     if (contractions.length === 0) return;
     
     const lines = [
-      `Contraction Log (${new Date().toLocaleDateString()})`,
+      `Swell Contraction Log (${new Date().toLocaleDateString()})`,
       `Total Logged: ${contractions.length}`,
       `Last Hour: ${stats.countLastHour} contractions | Avg Dur: ${stats.avgDurationSeconds}s | Avg Int: ${Math.round(stats.avgIntervalSeconds / 60)}m`,
       '',
@@ -178,6 +252,11 @@
   }
 
   onMount(() => {
+    audio.soundEnabled = soundOn;
+    if (activeStartTime) {
+      currentDuration = Math.max(0, Math.floor((Date.now() - activeStartTime) / 1000));
+      startTicker();
+    }
     startIntervalTicker();
   });
 
@@ -231,7 +310,7 @@
       <!-- Reset session -->
       {#if contractions.length > 0 || isActive}
         <button
-          onclick={handleReset}
+          onclick={() => showResetModal = true}
           class="p-2 rounded-2xl bg-white/70 border border-stone-200/80 text-stone-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
           title="Reset session"
           aria-label="Reset session"
@@ -285,6 +364,39 @@
     open={showGuidelines}
     onclose={() => showGuidelines = false}
   />
+
+  <!-- Explicit Clear Confirmation Modal -->
+  {#if showResetModal}
+    <div 
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs"
+      role="dialog"
+      aria-modal="true"
+      tabindex="-1"
+      onclick={(e) => { if (e.target === e.currentTarget) showResetModal = false; }}
+      onkeydown={(e) => { if (e.key === 'Escape') showResetModal = false; }}
+    >
+      <div class="bg-[#FAF7F2] max-w-sm w-full rounded-3xl p-6 shadow-2xl border border-[#EBE1D8] text-[#3D3A37] text-center">
+        <h3 class="text-lg font-semibold text-stone-800">Clear Current Session?</h3>
+        <p class="text-xs sm:text-sm text-stone-600 mt-2">
+          This will permanently delete all {contractions.length} recorded surges. This action cannot be undone.
+        </p>
+        <div class="mt-6 flex items-center justify-end gap-2.5">
+          <button
+            onclick={() => showResetModal = false}
+            class="flex-1 py-2.5 px-4 rounded-xl border border-stone-300 text-stone-700 text-xs sm:text-sm font-medium hover:bg-stone-100 transition-colors"
+          >
+            Keep Data
+          </button>
+          <button
+            onclick={confirmReset}
+            class="flex-1 py-2.5 px-4 rounded-xl bg-rose-500 text-white text-xs sm:text-sm font-medium hover:bg-rose-600 transition-colors shadow-xs"
+          >
+            Yes, Clear All
+          </button>
+        </div>
+      </div>
+    </div>
+  {/if}
 
   <!-- Toast Notification -->
   {#if showCopiedToast}
