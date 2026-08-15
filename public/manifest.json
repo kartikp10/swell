@@ -1,0 +1,17 @@
+{
+  "name": "Swell • Contraction Timer",
+  "short_name": "Swell",
+  "description": "A soothing, single-tap contraction timer for labor and birth.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#FAF7F2",
+  "theme_color": "#FAF7F2",
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
