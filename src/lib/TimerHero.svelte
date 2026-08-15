@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Play, Square, X } from 'lucide-svelte';
   import { formatDuration } from '../types';
+  import SurgeCue from './SurgeCue.svelte';
 
   interface Props {
     isActive: boolean;
@@ -79,9 +80,12 @@
     </button>
   </div>
 
+  <!-- Realtime 1-liner surge coaching cue during active surge -->
+  <SurgeCue {isActive} {dimMode} />
+
   <!-- Cancel Active Timer Button -->
   {#if isActive}
-    <div class="mt-6 flex items-center gap-2">
+    <div class="mt-4 flex items-center gap-2">
       <button
         onclick={onCancel}
         class="text-xs {dimMode ? 'text-stone-400 hover:text-stone-200 hover:bg-stone-800' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-200/50'} px-3 py-1.5 rounded-full transition-colors flex items-center gap-1 cursor-pointer"
