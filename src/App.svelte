@@ -5,13 +5,15 @@
   import QuickSummary from './lib/QuickSummary.svelte';
   import ContractionList from './lib/ContractionList.svelte';
   import GuidelinesModal from './lib/GuidelinesModal.svelte';
-  import { calculateStats, parseStoredContractions, generateCSVReport, type Contraction, type Intensity } from './types';
+  import WaterBreakCard from './lib/WaterBreakCard.svelte';
+  import { calculateStats, parseStoredContractions, generateCSVReport, type Contraction, type Intensity, type WaterBreakEvent } from './types';
   import { audio } from './lib/audio';
 
   const STORAGE_KEY = 'swell_contractions';
   const ACTIVE_KEY = 'swell_active_timer';
   const SOUND_KEY = 'swell_sound_pref';
   const DIM_KEY = 'swell_dim_pref';
+  const WATER_KEY = 'swell_water_break';
 
   // Safe State initialization from localStorage
   function getStoredContractions(): Contraction[] {
@@ -23,6 +25,21 @@
       return parseStoredContractions(parsed);
     } catch {
       return [];
+    }
+  }
+
+  function getStoredWaterBreak(): WaterBreakEvent | null {
+    if (typeof window === 'undefined') return null;
+    try {
+      const data = localStorage.getItem(WATER_KEY);
+      if (!data) return null;
+      const parsed = JSON.parse(data);
+      if (typeof parsed === 'object' && parsed && typeof parsed.timestamp === 'number') {
+        return parsed;
+      }
+      return null;
+    } catch {
+      return null;
     }
   }
 
@@ -65,6 +82,7 @@
 
   // Core state (persisted across refreshes)
   let contractions = $state<Contraction[]>(getStoredContractions());
+  let waterBreak = $state<WaterBreakEvent | null>(getStoredWaterBreak());
   let activeStartTime = $state<number | null>(getStoredActiveTime());
   const isActive = $derived(activeStartTime !== null);
   let currentDuration = $state<number>(0);
@@ -87,7 +105,19 @@
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(contractions));
     } catch {
-      // LocalStorage might be disabled or full
+      // ignore
+    }
+  });
+
+  $effect(() => {
+    try {
+      if (waterBreak) {
+        localStorage.setItem(WATER_KEY, JSON.stringify(waterBreak));
+      } else {
+        localStorage.removeItem(WATER_KEY);
+      }
+    } catch {
+      // ignore
     }
   });
 
@@ -99,7 +129,7 @@
         localStorage.removeItem(ACTIVE_KEY);
       }
     } catch {
-      // LocalStorage might be disabled or full
+      // ignore
     }
   });
 
@@ -108,7 +138,7 @@
       localStorage.setItem(SOUND_KEY, String(soundOn));
       audio.soundEnabled = soundOn;
     } catch {
-      // LocalStorage might be disabled or full
+      // ignore
     }
   });
 
@@ -271,11 +301,13 @@
   function confirmReset() {
     handleCancel();
     contractions = [];
+    waterBreak = null;
     timeSinceLast = null;
     showResetModal = false;
     try {
       localStorage.removeItem(STORAGE_KEY);
       localStorage.removeItem(ACTIVE_KEY);
+      localStorage.removeItem(WATER_KEY);
     } catch {
       // ignore
     }
@@ -298,11 +330,12 @@
   }
 
   async function copySummary() {
-    if (contractions.length === 0) return;
+    if (contractions.length === 0 && !waterBreak) return;
     
     const lines = [
       `Swell Contraction Log (${new Date().toLocaleDateString()})`,
-      `Total Logged: ${contractions.length}`,
+      waterBreak ? `Water Break: ${new Date(waterBreak.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})} (${waterBreak.color})` : '',
+      `Total Contractions Logged: ${contractions.length}`,
       `Last Hour: ${stats.countLastHour} contractions | Avg Dur: ${stats.avgDurationSeconds}s | Avg Int: ${Math.round(stats.avgIntervalSeconds / 60)}m`,
       '',
       ...contractions.map((c, i) => {
@@ -312,7 +345,7 @@
         const intensityStr = c.intensity ? ` [${c.intensity}]` : '';
         return `#${contractions.length - i}: ${time} - ${c.durationSeconds}s duration - ${intStr}${intensityStr}${notesStr}`;
       })
-    ];
+    ].filter(Boolean);
 
     const textToCopy = lines.join('\n');
     try {
@@ -335,8 +368,8 @@
   }
 
   function downloadCSV() {
-    if (contractions.length === 0) return;
-    const csvContent = generateCSVReport(contractions);
+    if (contractions.length === 0 && !waterBreak) return;
+    const csvContent = generateCSVReport(contractions, waterBreak);
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -418,7 +451,7 @@
       </button>
 
       <!-- Share / Copy Log -->
-      {#if contractions.length > 0}
+      {#if contractions.length > 0 || waterBreak}
         <button
           onclick={copySummary}
           class="p-2 rounded-2xl border transition-colors cursor-pointer {dimMode ? 'bg-stone-800 border-stone-700 text-stone-300 hover:bg-stone-700' : 'bg-white/70 border-stone-200/80 text-stone-600 hover:text-stone-900'}"
@@ -439,7 +472,7 @@
       {/if}
 
       <!-- Reset session -->
-      {#if contractions.length > 0 || isActive}
+      {#if contractions.length > 0 || isActive || waterBreak}
         <button
           onclick={() => showResetModal = true}
           class="p-2 rounded-2xl border transition-colors cursor-pointer {dimMode ? 'bg-stone-800 border-stone-700 text-stone-400 hover:text-rose-400' : 'bg-white/70 border-stone-200/80 text-stone-400 hover:text-rose-600 hover:bg-rose-50'}"
@@ -468,6 +501,13 @@
       {stats}
       totalCount={contractions.length}
       onOpenGuide={() => showGuidelines = true}
+    />
+
+    <!-- Water Breaking Tracker -->
+    <WaterBreakCard
+      event={waterBreak}
+      {dimMode}
+      onSave={(val) => waterBreak = val}
     />
 
     <!-- Contraction History List -->
@@ -509,7 +549,7 @@
       <div class="{dimMode ? 'bg-stone-900 border-stone-800 text-[#E6DFD5]' : 'bg-[#FAF7F2] border-[#EBE1D8] text-[#3D3A37]'} max-w-sm w-full rounded-3xl p-6 shadow-2xl border text-center">
         <h3 class="text-lg font-semibold {dimMode ? 'text-stone-100' : 'text-stone-800'}">Clear Current Session?</h3>
         <p class="text-xs sm:text-sm {dimMode ? 'text-stone-400' : 'text-stone-600'} mt-2">
-          This will permanently delete all {contractions.length} recorded surges. This action cannot be undone.
+          This will permanently delete all recorded surges and notes. This action cannot be undone.
         </p>
         <div class="mt-6 flex items-center justify-end gap-2.5">
           <button
