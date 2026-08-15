@@ -35,12 +35,11 @@
     {/if}
   </div>
 
-  <!-- Main Contraction Button -->
+  <!-- Main Contraction Button Container -->
   <div class="relative flex items-center justify-center">
-    <!-- Breathing ripple effect when active -->
+    <!-- Subtle contained pulsing aura behind active button -->
     {#if isActive}
-      <div class="absolute inset-0 rounded-full bg-[#E07A5F]/20 animate-ripple pointer-events-none"></div>
-      <div class="absolute -inset-4 rounded-full bg-[#E07A5F]/15 animate-breathe pointer-events-none"></div>
+      <div class="absolute inset-0 rounded-full bg-[#E07A5F]/20 animate-breathe pointer-events-none scale-105"></div>
     {/if}
 
     <button
@@ -80,8 +79,10 @@
     </button>
   </div>
 
-  <!-- Realtime 1-liner surge coaching cue during active surge -->
-  <SurgeCue {isActive} {dimMode} />
+  <!-- Realtime 1-liner surge coaching cue during active surge with generous margin to avoid overlap -->
+  <div class="mt-8 z-10">
+    <SurgeCue {isActive} {dimMode} />
+  </div>
 
   <!-- Cancel Active Timer Button -->
   {#if isActive}
