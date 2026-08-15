@@ -6,6 +6,7 @@
   import ContractionList from './lib/ContractionList.svelte';
   import GuidelinesModal from './lib/GuidelinesModal.svelte';
   import WaterBreakCard from './lib/WaterBreakCard.svelte';
+  import BirthAffirmations from './lib/BirthAffirmations.svelte';
   import { calculateStats, parseStoredContractions, generateCSVReport, type Contraction, type Intensity, type WaterBreakEvent } from './types';
   import { audio } from './lib/audio';
 
@@ -492,14 +493,21 @@
       {isActive}
       durationSeconds={currentDuration}
       intervalSeconds={timeSinceLast}
+      {dimMode}
       onToggle={handleToggle}
       onCancel={handleCancel}
     />
+
+    <!-- Birth Affirmations -->
+    {#if !isActive}
+      <BirthAffirmations {dimMode} />
+    {/if}
 
     <!-- Rolling Stats Card -->
     <QuickSummary
       {stats}
       totalCount={contractions.length}
+      {dimMode}
       onOpenGuide={() => showGuidelines = true}
     />
 
@@ -513,6 +521,7 @@
     <!-- Contraction History List -->
     <ContractionList
       {contractions}
+      {dimMode}
       onDelete={handleDelete}
       onUpdateIntensity={handleUpdateIntensity}
       onUpdateNotes={handleUpdateNotes}
@@ -533,6 +542,7 @@
   <!-- Guidelines Modal -->
   <GuidelinesModal
     open={showGuidelines}
+    {dimMode}
     onclose={() => showGuidelines = false}
   />
 
