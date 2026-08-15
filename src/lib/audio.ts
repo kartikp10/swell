@@ -3,21 +3,25 @@ class AudioManager {
   private ctx: AudioContext | null = null;
   public soundEnabled: boolean = true;
 
-  private getContext() {
+  private getContext(): AudioContext | null {
     if (!this.ctx && typeof window !== 'undefined') {
       const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       if (AudioCtx) {
-        this.ctx = new AudioCtx();
+        try {
+          this.ctx = new AudioCtx();
+        } catch {
+          this.ctx = null;
+        }
       }
     }
     if (this.ctx && this.ctx.state === 'suspended') {
-      this.ctx.resume();
+      this.ctx.resume().catch(() => {});
     }
     return this.ctx;
   }
 
   // Play a gentle warm chime when contraction starts
-  playStartChime() {
+  playStartChime(): void {
     if (!this.soundEnabled) return;
     try {
       const ctx = this.getContext();
@@ -40,12 +44,12 @@ class AudioManager {
       osc.start(ctx.currentTime);
       osc.stop(ctx.currentTime + 0.6);
     } catch {
-      // Audio context might be restricted
+      // Audio context might be restricted before user gesture
     }
   }
 
   // Play a soft resolving chime when contraction ends
-  playEndChime() {
+  playEndChime(): void {
     if (!this.soundEnabled) return;
     try {
       const ctx = this.getContext();
@@ -68,17 +72,17 @@ class AudioManager {
       osc.start(ctx.currentTime);
       osc.stop(ctx.currentTime + 0.7);
     } catch {
-      // Ignore audio failure
+      // Audio context might be restricted
     }
   }
 
   // Trigger subtle device vibration if supported
-  vibrate(ms: number = 40) {
+  vibrate(pattern: number | number[] = 40): void {
     if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
       try {
-        navigator.vibrate(ms);
+        navigator.vibrate(pattern);
       } catch {
-        // vibration unsupported
+        // vibration unsupported or blocked
       }
     }
   }

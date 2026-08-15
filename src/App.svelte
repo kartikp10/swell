@@ -5,19 +5,21 @@
   import QuickSummary from './lib/QuickSummary.svelte';
   import ContractionList from './lib/ContractionList.svelte';
   import GuidelinesModal from './lib/GuidelinesModal.svelte';
-  import { calculateStats, type Contraction } from './types';
+  import { calculateStats, parseStoredContractions, type Contraction, type Intensity } from './types';
   import { audio } from './lib/audio';
 
   const STORAGE_KEY = 'swell_contractions';
   const ACTIVE_KEY = 'swell_active_timer';
   const SOUND_KEY = 'swell_sound_pref';
 
-  // State initialization from localStorage
+  // Safe State initialization from localStorage
   function getStoredContractions(): Contraction[] {
     if (typeof window === 'undefined') return [];
     try {
       const data = localStorage.getItem(STORAGE_KEY);
-      return data ? JSON.parse(data) : [];
+      if (!data) return [];
+      const parsed = JSON.parse(data);
+      return parseStoredContractions(parsed);
     } catch {
       return [];
     }
@@ -27,7 +29,15 @@
     if (typeof window === 'undefined') return null;
     try {
       const data = localStorage.getItem(ACTIVE_KEY);
-      return data ? Number(data) : null;
+      if (!data) return null;
+      const num = Number(data);
+      if (Number.isFinite(num) && num > 0 && num <= Date.now()) {
+        // Only restore if active contraction started less than 30 minutes ago (prevent stale timers)
+        if (Date.now() - num < 30 * 60 * 1000) {
+          return num;
+        }
+      }
+      return null;
     } catch {
       return null;
     }
@@ -58,13 +68,14 @@
 
   let timerInterval: ReturnType<typeof setInterval> | null = null;
   let intervalTimer: ReturnType<typeof setInterval> | null = null;
+  let wakeLockSentinel: any = null;
 
-  // Sync state to localStorage whenever it changes
+  // Sync state to localStorage safely whenever it changes
   $effect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(contractions));
     } catch {
-      // ignore storage errors
+      // LocalStorage might be disabled or full
     }
   });
 
@@ -76,7 +87,7 @@
         localStorage.removeItem(ACTIVE_KEY);
       }
     } catch {
-      // ignore storage errors
+      // LocalStorage might be disabled or full
     }
   });
 
@@ -85,7 +96,7 @@
       localStorage.setItem(SOUND_KEY, String(soundOn));
       audio.soundEnabled = soundOn;
     } catch {
-      // ignore storage errors
+      // LocalStorage might be disabled or full
     }
   });
 
@@ -127,6 +138,20 @@
     }
   }
 
+  // Request screen wake lock so display doesn't sleep while timing
+  async function requestWakeLock() {
+    if (typeof navigator !== 'undefined' && 'wakeLock' in navigator && !wakeLockSentinel) {
+      try {
+        wakeLockSentinel = await (navigator as any).wakeLock.request('screen');
+        wakeLockSentinel.addEventListener('release', () => {
+          wakeLockSentinel = null;
+        });
+      } catch {
+        // WakeLock request rejected or unsupported
+      }
+    }
+  }
+
   // Primary Action: Single button start / stop toggle
   function handleToggle() {
     const now = Date.now();
@@ -139,6 +164,7 @@
 
       audio.playStartChime();
       audio.vibrate(50);
+      requestWakeLock();
     } else {
       // STOP contraction
       if (!activeStartTime) return;
@@ -152,8 +178,12 @@
         intervalSeconds = Math.max(0, Math.round((activeStartTime - contractions[0].startTime) / 1000));
       }
 
+      const id = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+
       const newContraction: Contraction = {
-        id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+        id,
         startTime: activeStartTime,
         endTime,
         durationSeconds,
@@ -202,7 +232,7 @@
     updateIntervalDisplay();
   }
 
-  function handleUpdateIntensity(id: string, intensity: 'mild' | 'moderate' | 'strong') {
+  function handleUpdateIntensity(id: string, intensity: Intensity) {
     contractions = contractions.map(c => c.id === id ? { ...c, intensity } : c);
   }
 
@@ -228,7 +258,7 @@
     soundOn = !soundOn;
   }
 
-  function copySummary() {
+  async function copySummary() {
     if (contractions.length === 0) return;
     
     const lines = [
@@ -240,15 +270,32 @@
         const time = new Date(c.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const intStr = c.intervalSeconds ? `Every ${Math.round(c.intervalSeconds / 60)}m` : 'First';
         const notesStr = c.notes ? ` (${c.notes})` : '';
-        return `#${contractions.length - i}: ${time} - ${c.durationSeconds}s duration - ${intStr}${notesStr}`;
+        const intensityStr = c.intensity ? ` [${c.intensity}]` : '';
+        return `#${contractions.length - i}: ${time} - ${c.durationSeconds}s duration - ${intStr}${intensityStr}${notesStr}`;
       })
     ];
 
-    navigator.clipboard.writeText(lines.join('\n'));
-    showCopiedToast = true;
-    setTimeout(() => {
-      showCopiedToast = false;
-    }, 2500);
+    const textToCopy = lines.join('\n');
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(textToCopy);
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = textToCopy;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+      showCopiedToast = true;
+      setTimeout(() => {
+        showCopiedToast = false;
+      }, 2500);
+    } catch {
+      // fallback if clipboard fails
+    }
   }
 
   onMount(() => {
@@ -263,6 +310,13 @@
   onDestroy(() => {
     stopTicker();
     if (intervalTimer) clearInterval(intervalTimer);
+    if (wakeLockSentinel) {
+      try {
+        wakeLockSentinel.release();
+      } catch {
+        // ignore
+      }
+    }
   });
 </script>
 
@@ -284,7 +338,7 @@
       <!-- Sound toggle -->
       <button
         onclick={toggleSound}
-        class="p-2 rounded-2xl bg-white/70 border border-stone-200/80 text-stone-600 hover:text-stone-900 transition-colors"
+        class="p-2 rounded-2xl bg-white/70 border border-stone-200/80 text-stone-600 hover:text-stone-900 transition-colors cursor-pointer"
         title={soundOn ? 'Mute soothing chimes' : 'Enable chimes'}
         aria-label="Toggle chime audio"
       >
@@ -299,7 +353,7 @@
       {#if contractions.length > 0}
         <button
           onclick={copySummary}
-          class="p-2 rounded-2xl bg-white/70 border border-stone-200/80 text-stone-600 hover:text-stone-900 transition-colors"
+          class="p-2 rounded-2xl bg-white/70 border border-stone-200/80 text-stone-600 hover:text-stone-900 transition-colors cursor-pointer"
           title="Copy log to share with midwife/doctor"
           aria-label="Copy summary"
         >
@@ -311,7 +365,7 @@
       {#if contractions.length > 0 || isActive}
         <button
           onclick={() => showResetModal = true}
-          class="p-2 rounded-2xl bg-white/70 border border-stone-200/80 text-stone-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+          class="p-2 rounded-2xl bg-white/70 border border-stone-200/80 text-stone-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
           title="Reset session"
           aria-label="Reset session"
         >
@@ -353,7 +407,7 @@
     <div class="flex items-center justify-center gap-1.5">
       <span>Designed with care for your labor journey</span>
       <span>•</span>
-      <button onclick={() => showGuidelines = true} class="hover:text-stone-600 underline">
+      <button onclick={() => showGuidelines = true} class="hover:text-stone-600 underline cursor-pointer">
         Labor Guide
       </button>
     </div>
@@ -383,13 +437,13 @@
         <div class="mt-6 flex items-center justify-end gap-2.5">
           <button
             onclick={() => showResetModal = false}
-            class="flex-1 py-2.5 px-4 rounded-xl border border-stone-300 text-stone-700 text-xs sm:text-sm font-medium hover:bg-stone-100 transition-colors"
+            class="flex-1 py-2.5 px-4 rounded-xl border border-stone-300 text-stone-700 text-xs sm:text-sm font-medium hover:bg-stone-100 transition-colors cursor-pointer"
           >
             Keep Data
           </button>
           <button
             onclick={confirmReset}
-            class="flex-1 py-2.5 px-4 rounded-xl bg-rose-500 text-white text-xs sm:text-sm font-medium hover:bg-rose-600 transition-colors shadow-xs"
+            class="flex-1 py-2.5 px-4 rounded-xl bg-rose-500 text-white text-xs sm:text-sm font-medium hover:bg-rose-600 transition-colors shadow-xs cursor-pointer"
           >
             Yes, Clear All
           </button>
@@ -400,7 +454,7 @@
 
   <!-- Toast Notification -->
   {#if showCopiedToast}
-    <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-stone-900/90 text-white text-xs px-4 py-2.5 rounded-full shadow-lg backdrop-blur-sm animate-bounce">
+    <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-stone-900/90 text-white text-xs px-4 py-2.5 rounded-full shadow-lg backdrop-blur-sm">
       Log copied to clipboard to send your doctor or partner!
     </div>
   {/if}

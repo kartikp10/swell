@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Play, Square, Sparkles, X, RotateCcw } from 'lucide-svelte';
+  import { Play, Square, X } from 'lucide-svelte';
   import { formatDuration } from '../types';
 
   interface Props {
@@ -76,7 +76,7 @@
 
   <!-- Cancel Active Timer Button -->
   {#if isActive}
-    <div class="mt-4 flex items-center gap-2 animate-fadeIn">
+    <div class="mt-4 flex items-center gap-2">
       <button
         onclick={onCancel}
         class="text-xs text-stone-400 hover:text-stone-600 px-3 py-1.5 rounded-full hover:bg-stone-200/50 transition-colors flex items-center gap-1"

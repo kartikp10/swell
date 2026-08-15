@@ -1,11 +1,11 @@
 <script lang="ts">
   import { Trash2, Smile, Meh, Frown, MessageSquarePlus, Check } from 'lucide-svelte';
-  import { formatTime, formatDuration, formatInterval, type Contraction } from '../types';
+  import { formatTime, formatDuration, formatInterval, type Contraction, type Intensity } from '../types';
 
   interface Props {
     contractions: Contraction[];
     onDelete: (id: string) => void;
-    onUpdateIntensity: (id: string, intensity: 'mild' | 'moderate' | 'strong') => void;
+    onUpdateIntensity: (id: string, intensity: Intensity) => void;
     onUpdateNotes: (id: string, notes: string) => void;
   }
 
@@ -20,7 +20,7 @@
   }
 
   function saveNotes(id: string) {
-    onUpdateNotes(id, tempNote.trim());
+    onUpdateNotes(id, tempNote.trim().slice(0, 280));
     editingNotesId = null;
   }
 </script>
@@ -65,7 +65,7 @@
             <!-- Delete action button -->
             <button
               onclick={() => onDelete(item.id)}
-              class="p-1.5 rounded-xl text-stone-300 hover:text-rose-500 hover:bg-rose-50 opacity-80 group-hover:opacity-100 transition-all"
+              class="p-1.5 rounded-xl text-stone-300 hover:text-rose-500 hover:bg-rose-50 opacity-80 group-hover:opacity-100 transition-all cursor-pointer"
               title="Delete this entry"
               aria-label="Delete entry"
             >
@@ -91,7 +91,7 @@
             <div class="flex items-center gap-1 bg-stone-50 p-1 rounded-xl border border-stone-100">
               <button
                 onclick={() => onUpdateIntensity(item.id, 'mild')}
-                class="px-2 py-1 rounded-lg text-xs flex items-center gap-1 transition-all {item.intensity === 'mild' ? 'bg-emerald-100 text-emerald-800 font-medium' : 'text-stone-400 hover:text-stone-700'}"
+                class="px-2 py-1 rounded-lg text-xs flex items-center gap-1 transition-all cursor-pointer {item.intensity === 'mild' ? 'bg-emerald-100 text-emerald-800 font-medium' : 'text-stone-400 hover:text-stone-700'}"
                 title="Mild"
               >
                 <Smile class="w-3.5 h-3.5" />
@@ -100,7 +100,7 @@
 
               <button
                 onclick={() => onUpdateIntensity(item.id, 'moderate')}
-                class="px-2 py-1 rounded-lg text-xs flex items-center gap-1 transition-all {item.intensity === 'moderate' ? 'bg-amber-100 text-amber-800 font-medium' : 'text-stone-400 hover:text-stone-700'}"
+                class="px-2 py-1 rounded-lg text-xs flex items-center gap-1 transition-all cursor-pointer {item.intensity === 'moderate' ? 'bg-amber-100 text-amber-800 font-medium' : 'text-stone-400 hover:text-stone-700'}"
                 title="Moderate"
               >
                 <Meh class="w-3.5 h-3.5" />
@@ -109,7 +109,7 @@
 
               <button
                 onclick={() => onUpdateIntensity(item.id, 'strong')}
-                class="px-2 py-1 rounded-lg text-xs flex items-center gap-1 transition-all {item.intensity === 'strong' ? 'bg-rose-100 text-rose-800 font-medium' : 'text-stone-400 hover:text-stone-700'}"
+                class="px-2 py-1 rounded-lg text-xs flex items-center gap-1 transition-all cursor-pointer {item.intensity === 'strong' ? 'bg-rose-100 text-rose-800 font-medium' : 'text-stone-400 hover:text-stone-700'}"
                 title="Strong"
               >
                 <Frown class="w-3.5 h-3.5" />
@@ -121,7 +121,7 @@
             {#if editingNotesId !== item.id}
               <button
                 onclick={() => startEditNotes(item)}
-                class="text-xs text-stone-500 hover:text-stone-800 flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-stone-100 transition-colors ml-auto"
+                class="text-xs text-stone-500 hover:text-stone-800 flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-stone-100 transition-colors ml-auto cursor-pointer"
               >
                 <MessageSquarePlus class="w-3.5 h-3.5" />
                 <span class="text-[11px]">{item.notes ? 'Edit note' : 'Add note'}</span>
@@ -135,20 +135,21 @@
               <input
                 type="text"
                 bind:value={tempNote}
+                maxlength="280"
                 placeholder="e.g. felt in lower back, deep breaths..."
                 class="text-xs px-3 py-1.5 rounded-xl border border-stone-200 bg-white flex-1 focus:outline-none focus:border-[#E07A5F]"
                 onkeydown={(e) => { if (e.key === 'Enter') saveNotes(item.id); }}
               />
               <button
                 onclick={() => saveNotes(item.id)}
-                class="p-1.5 bg-[#52796F] text-white rounded-xl hover:bg-[#2F3E46] transition-colors"
+                class="p-1.5 bg-[#52796F] text-white rounded-xl hover:bg-[#2F3E46] transition-colors cursor-pointer"
                 title="Save note"
               >
                 <Check class="w-3.5 h-3.5" />
               </button>
             </div>
           {:else if item.notes}
-            <p class="text-xs text-stone-600 italic bg-stone-50/70 p-2 rounded-xl mt-2 border border-stone-100">
+            <p class="text-xs text-stone-600 italic bg-stone-50/70 p-2 rounded-xl mt-2 border border-stone-100 break-words">
               "{item.notes}"
             </p>
           {/if}
