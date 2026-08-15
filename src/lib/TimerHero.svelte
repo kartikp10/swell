@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Play, Square, X } from 'lucide-svelte';
   import { formatDuration } from '../types';
+  import BreathingPacer from './BreathingPacer.svelte';
 
   interface Props {
     isActive: boolean;
@@ -13,7 +14,7 @@
   let { isActive, durationSeconds, intervalSeconds, onToggle, onCancel }: Props = $props();
 </script>
 
-<div class="flex flex-col items-center justify-center py-6 sm:py-10">
+<div class="flex flex-col items-center justify-center py-6 sm:py-8">
   <!-- Time since last contraction badge (when not actively contracting) -->
   {#if !isActive && intervalSeconds !== null}
     <div class="mb-6 px-4 py-1.5 rounded-full bg-stone-200/60 text-stone-600 text-xs font-medium tracking-wide flex items-center gap-1.5 transition-all">
@@ -74,12 +75,15 @@
     </button>
   </div>
 
+  <!-- Realtime visual breathing cue during contraction -->
+  <BreathingPacer {isActive} />
+
   <!-- Cancel Active Timer Button -->
   {#if isActive}
-    <div class="mt-4 flex items-center gap-2">
+    <div class="mt-3 flex items-center gap-2">
       <button
         onclick={onCancel}
-        class="text-xs text-stone-400 hover:text-stone-600 px-3 py-1.5 rounded-full hover:bg-stone-200/50 transition-colors flex items-center gap-1"
+        class="text-xs text-stone-400 hover:text-stone-600 px-3 py-1.5 rounded-full hover:bg-stone-200/50 transition-colors flex items-center gap-1 cursor-pointer"
       >
         <X class="w-3.5 h-3.5" />
         Discard accidental tap
