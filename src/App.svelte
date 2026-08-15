@@ -99,7 +99,7 @@
 
   let timerInterval: ReturnType<typeof setInterval> | null = null;
   let intervalTimer: ReturnType<typeof setInterval> | null = null;
-  let wakeLockSentinel: any = null;
+  let wakeLockSentinel: WakeLockSentinel | null = null;
 
   // Sync state to localStorage safely whenever it changes
   $effect(() => {
@@ -200,7 +200,7 @@
   async function requestWakeLock() {
     if (typeof navigator !== 'undefined' && 'wakeLock' in navigator && !wakeLockSentinel) {
       try {
-        wakeLockSentinel = await (navigator as any).wakeLock.request('screen');
+        wakeLockSentinel = await navigator.wakeLock.request('screen');
         wakeLockSentinel.addEventListener('release', () => {
           wakeLockSentinel = null;
         });
@@ -417,7 +417,7 @@
       </div>
       <div>
         <h1 class="text-lg font-semibold tracking-tight {dimMode ? 'text-[#FAF7F2]' : 'text-stone-800'} leading-none">Swell</h1>
-        <span class="text-[10px] {dimMode ? 'text-stone-400' : 'text-stone-400'} font-medium tracking-wide uppercase">Contraction Timer</span>
+        <span class="text-[10px] {dimMode ? 'text-stone-300' : 'text-stone-400'} font-medium tracking-wide uppercase">Contraction Timer</span>
       </div>
     </div>
 
@@ -426,7 +426,7 @@
       <!-- Dim / Candlelight Mode Toggle -->
       <button
         onclick={toggleDim}
-        class="p-2 rounded-2xl border transition-colors cursor-pointer {dimMode ? 'bg-stone-800 border-stone-700 text-amber-300 hover:bg-stone-700' : 'bg-white/70 border-stone-200/80 text-stone-600 hover:text-stone-900'}"
+        class="min-w-[44px] min-h-[44px] p-2 rounded-2xl border transition-colors cursor-pointer flex items-center justify-center {dimMode ? 'bg-stone-800 border-stone-700 text-amber-300 hover:bg-stone-700' : 'bg-white/70 border-stone-200/80 text-stone-600 hover:text-stone-900'}"
         title={dimMode ? 'Switch to daylight theme' : 'Switch to candlelight night mode'}
         aria-label="Toggle dim mode"
       >
@@ -440,7 +440,7 @@
       <!-- Sound toggle -->
       <button
         onclick={toggleSound}
-        class="p-2 rounded-2xl border transition-colors cursor-pointer {dimMode ? 'bg-stone-800 border-stone-700 text-stone-300 hover:bg-stone-700' : 'bg-white/70 border-stone-200/80 text-stone-600 hover:text-stone-900'}"
+        class="min-w-[44px] min-h-[44px] p-2 rounded-2xl border transition-colors cursor-pointer flex items-center justify-center {dimMode ? 'bg-stone-800 border-stone-700 text-stone-300 hover:bg-stone-700' : 'bg-white/70 border-stone-200/80 text-stone-600 hover:text-stone-900'}"
         title={soundOn ? 'Mute soothing chimes' : 'Enable chimes'}
         aria-label="Toggle chime audio"
       >
@@ -455,7 +455,7 @@
       {#if contractions.length > 0 || waterBreak}
         <button
           onclick={copySummary}
-          class="p-2 rounded-2xl border transition-colors cursor-pointer {dimMode ? 'bg-stone-800 border-stone-700 text-stone-300 hover:bg-stone-700' : 'bg-white/70 border-stone-200/80 text-stone-600 hover:text-stone-900'}"
+          class="min-w-[44px] min-h-[44px] p-2 rounded-2xl border transition-colors cursor-pointer flex items-center justify-center {dimMode ? 'bg-stone-800 border-stone-700 text-stone-300 hover:bg-stone-700' : 'bg-white/70 border-stone-200/80 text-stone-600 hover:text-stone-900'}"
           title="Copy log to share with midwife/doctor"
           aria-label="Copy summary"
         >
@@ -464,7 +464,7 @@
 
         <button
           onclick={downloadCSV}
-          class="p-2 rounded-2xl border transition-colors cursor-pointer {dimMode ? 'bg-stone-800 border-stone-700 text-stone-300 hover:bg-stone-700' : 'bg-white/70 border-stone-200/80 text-stone-600 hover:text-stone-900'}"
+          class="min-w-[44px] min-h-[44px] p-2 rounded-2xl border transition-colors cursor-pointer flex items-center justify-center {dimMode ? 'bg-stone-800 border-stone-700 text-stone-300 hover:bg-stone-700' : 'bg-white/70 border-stone-200/80 text-stone-600 hover:text-stone-900'}"
           title="Download CSV spreadsheet report"
           aria-label="Download CSV"
         >
@@ -476,7 +476,7 @@
       {#if contractions.length > 0 || isActive || waterBreak}
         <button
           onclick={() => showResetModal = true}
-          class="p-2 rounded-2xl border transition-colors cursor-pointer {dimMode ? 'bg-stone-800 border-stone-700 text-stone-400 hover:text-rose-400' : 'bg-white/70 border-stone-200/80 text-stone-400 hover:text-rose-600 hover:bg-rose-50'}"
+          class="min-w-[44px] min-h-[44px] p-2 rounded-2xl border transition-colors cursor-pointer flex items-center justify-center {dimMode ? 'bg-stone-800 border-stone-700 text-stone-400 hover:text-rose-400' : 'bg-white/70 border-stone-200/80 text-stone-400 hover:text-rose-600 hover:bg-rose-50'}"
           title="Reset session"
           aria-label="Reset session"
         >

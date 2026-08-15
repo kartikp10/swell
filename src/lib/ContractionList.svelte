@@ -66,7 +66,7 @@
             <!-- Delete action button -->
             <button
               onclick={() => onDelete(item.id)}
-              class="p-1.5 rounded-xl {dimMode ? 'text-stone-500 hover:text-rose-400 hover:bg-stone-800' : 'text-stone-300 hover:text-rose-500 hover:bg-rose-50'} opacity-80 group-hover:opacity-100 transition-all cursor-pointer"
+              class="min-w-[44px] min-h-[44px] p-2 rounded-xl flex items-center justify-center {dimMode ? 'text-stone-500 hover:text-rose-400 hover:bg-stone-800' : 'text-stone-300 hover:text-rose-500 hover:bg-rose-50'} opacity-80 group-hover:opacity-100 transition-all cursor-pointer"
               title="Delete this entry"
               aria-label="Delete entry"
             >
@@ -92,28 +92,31 @@
             <div class="flex items-center gap-1 {dimMode ? 'bg-stone-800/80 border-stone-700/60' : 'bg-stone-50 border-stone-100'} p-1 rounded-xl border">
               <button
                 onclick={() => onUpdateIntensity(item.id, 'mild')}
-                class="px-2 py-1 rounded-lg text-xs flex items-center gap-1 transition-all cursor-pointer {item.intensity === 'mild' ? (dimMode ? 'bg-emerald-950 text-emerald-300 font-medium' : 'bg-emerald-100 text-emerald-800 font-medium') : (dimMode ? 'text-stone-400 hover:text-stone-200' : 'text-stone-400 hover:text-stone-700')}"
-                title="Mild"
+                class="min-h-[44px] px-3 py-2 rounded-lg text-xs flex items-center justify-center gap-1 transition-all cursor-pointer {item.intensity === 'mild' ? (dimMode ? 'bg-emerald-950 text-emerald-300 font-medium' : 'bg-emerald-100 text-emerald-800 font-medium') : (dimMode ? 'text-stone-400 hover:text-stone-200' : 'text-stone-400 hover:text-stone-700')}"
+                title="Mild intensity"
+                aria-label="Mark intensity as mild"
               >
-                <Smile class="w-3.5 h-3.5" />
+                <Smile class="w-4 h-4" />
                 <span class="text-[11px]">Mild</span>
               </button>
 
               <button
                 onclick={() => onUpdateIntensity(item.id, 'moderate')}
-                class="px-2 py-1 rounded-lg text-xs flex items-center gap-1 transition-all cursor-pointer {item.intensity === 'moderate' ? (dimMode ? 'bg-amber-950 text-amber-300 font-medium' : 'bg-amber-100 text-amber-800 font-medium') : (dimMode ? 'text-stone-400 hover:text-stone-200' : 'text-stone-400 hover:text-stone-700')}"
-                title="Moderate"
+                class="min-h-[44px] px-3 py-2 rounded-lg text-xs flex items-center justify-center gap-1 transition-all cursor-pointer {item.intensity === 'moderate' ? (dimMode ? 'bg-amber-950 text-amber-300 font-medium' : 'bg-amber-100 text-amber-800 font-medium') : (dimMode ? 'text-stone-400 hover:text-stone-200' : 'text-stone-400 hover:text-stone-700')}"
+                title="Moderate intensity"
+                aria-label="Mark intensity as moderate"
               >
-                <Meh class="w-3.5 h-3.5" />
+                <Meh class="w-4 h-4" />
                 <span class="text-[11px]">Moderate</span>
               </button>
 
               <button
                 onclick={() => onUpdateIntensity(item.id, 'strong')}
-                class="px-2 py-1 rounded-lg text-xs flex items-center gap-1 transition-all cursor-pointer {item.intensity === 'strong' ? (dimMode ? 'bg-rose-950 text-rose-300 font-medium' : 'bg-rose-100 text-rose-800 font-medium') : (dimMode ? 'text-stone-400 hover:text-stone-200' : 'text-stone-400 hover:text-stone-700')}"
-                title="Strong"
+                class="min-h-[44px] px-3 py-2 rounded-lg text-xs flex items-center justify-center gap-1 transition-all cursor-pointer {item.intensity === 'strong' ? (dimMode ? 'bg-rose-950 text-rose-300 font-medium' : 'bg-rose-100 text-rose-800 font-medium') : (dimMode ? 'text-stone-400 hover:text-stone-200' : 'text-stone-400 hover:text-stone-700')}"
+                title="Strong intensity"
+                aria-label="Mark intensity as strong"
               >
-                <Frown class="w-3.5 h-3.5" />
+                <Frown class="w-4 h-4" />
                 <span class="text-[11px]">Strong</span>
               </button>
             </div>
@@ -122,9 +125,10 @@
             {#if editingNotesId !== item.id}
               <button
                 onclick={() => startEditNotes(item)}
-                class="text-xs {dimMode ? 'text-stone-400 hover:text-stone-200 hover:bg-stone-800' : 'text-stone-500 hover:text-stone-800 hover:bg-stone-100'} flex items-center gap-1 px-2 py-1 rounded-lg transition-colors ml-auto cursor-pointer"
+                class="min-h-[44px] text-xs {dimMode ? 'text-stone-400 hover:text-stone-200 hover:bg-stone-800' : 'text-stone-500 hover:text-stone-800 hover:bg-stone-100'} flex items-center justify-center gap-1 px-3 py-2 rounded-lg transition-colors ml-auto cursor-pointer"
+                aria-label={item.notes ? 'Edit note for this surge' : 'Add note to this surge'}
               >
-                <MessageSquarePlus class="w-3.5 h-3.5" />
+                <MessageSquarePlus class="w-4 h-4" />
                 <span class="text-[11px]">{item.notes ? 'Edit note' : 'Add note'}</span>
               </button>
             {/if}
@@ -138,15 +142,16 @@
                 bind:value={tempNote}
                 maxlength="280"
                 placeholder="e.g. felt in lower back, deep breaths..."
-                class="text-xs px-3 py-1.5 rounded-xl border {dimMode ? 'bg-stone-800 text-stone-100 border-stone-700' : 'bg-white text-stone-800 border-stone-200'} flex-1 focus:outline-none focus:border-[#E07A5F]"
+                class="text-xs min-h-[44px] px-3 py-2 rounded-xl border {dimMode ? 'bg-stone-800 text-stone-100 border-stone-700' : 'bg-white text-stone-800 border-stone-200'} flex-1 focus:outline-none focus:border-[#E07A5F]"
                 onkeydown={(e) => { if (e.key === 'Enter') saveNotes(item.id); }}
               />
               <button
                 onclick={() => saveNotes(item.id)}
-                class="p-1.5 bg-[#52796F] text-white rounded-xl hover:bg-[#2F3E46] transition-colors cursor-pointer"
+                class="min-w-[44px] min-h-[44px] p-2 bg-[#52796F] text-white rounded-xl hover:bg-[#2F3E46] transition-colors cursor-pointer flex items-center justify-center"
                 title="Save note"
+                aria-label="Save note"
               >
-                <Check class="w-3.5 h-3.5" />
+                <Check class="w-4 h-4" />
               </button>
             </div>
           {:else if item.notes}

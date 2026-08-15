@@ -16,21 +16,23 @@
 
 <div class="flex flex-col items-center justify-center py-6 sm:py-8">
   <!-- Time since last contraction badge (when not actively contracting) -->
-  {#if !isActive && intervalSeconds !== null}
-    <div class="mb-6 px-4 py-1.5 rounded-full {dimMode ? 'bg-stone-800/90 text-stone-300 border border-stone-700/60' : 'bg-stone-200/60 text-stone-600'} text-xs font-medium tracking-wide flex items-center gap-1.5 transition-all">
-      <span class="w-2 h-2 rounded-full bg-[#52796F] animate-pulse"></span>
-      Time since last wave: <span class="font-semibold {dimMode ? 'text-[#FAF7F2]' : 'text-stone-800'}">{formatDuration(intervalSeconds)}</span>
-    </div>
-  {:else if !isActive}
-    <div class="mb-6 px-4 py-1.5 rounded-full bg-transparent {dimMode ? 'text-stone-500' : 'text-stone-400'} text-xs font-medium tracking-wide">
-      Ready when you are
-    </div>
-  {:else}
-    <div class="mb-6 px-4 py-1.5 rounded-full {dimMode ? 'bg-rose-950/80 text-rose-300 border border-rose-800/60' : 'bg-rose-100/80 text-[#E07A5F]'} text-xs font-semibold tracking-wide flex items-center gap-1.5 transition-all animate-gentle-pulse">
-      <span class="w-2 h-2 rounded-full bg-[#E07A5F] animate-ping"></span>
-      Surge in progress — Breathe gently
-    </div>
-  {/if}
+  <div role="status" aria-live="polite">
+    {#if !isActive && intervalSeconds !== null}
+      <div class="mb-6 px-4 py-1.5 rounded-full {dimMode ? 'bg-stone-800/90 text-stone-300 border border-stone-700/60' : 'bg-stone-200/60 text-stone-600'} text-xs font-medium tracking-wide flex items-center gap-1.5 transition-all">
+        <span class="w-2 h-2 rounded-full bg-[#52796F] animate-pulse"></span>
+        Time since last wave: <span class="font-semibold {dimMode ? 'text-[#FAF7F2]' : 'text-stone-800'}">{formatDuration(intervalSeconds)}</span>
+      </div>
+    {:else if !isActive}
+      <div class="mb-6 px-4 py-1.5 rounded-full bg-transparent {dimMode ? 'text-stone-500' : 'text-stone-400'} text-xs font-medium tracking-wide">
+        Ready when you are
+      </div>
+    {:else}
+      <div class="mb-6 px-4 py-1.5 rounded-full {dimMode ? 'bg-rose-950/80 text-rose-300 border border-rose-800/60' : 'bg-rose-100/80 text-[#E07A5F]'} text-xs font-semibold tracking-wide flex items-center gap-1.5 transition-all animate-gentle-pulse">
+        <span class="w-2 h-2 rounded-full bg-[#E07A5F] animate-ping"></span>
+        Surge in progress — Breathe gently
+      </div>
+    {/if}
+  </div>
 
   <!-- Main Contraction Button -->
   <div class="relative flex items-center justify-center">

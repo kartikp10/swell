@@ -52,7 +52,7 @@
               Water Breaking (ROM)
             {/if}
           </h4>
-          <p class="text-[11px] {dimMode ? 'text-stone-400' : 'text-stone-400'}">
+          <p class="text-[11px] {dimMode ? 'text-stone-300' : 'text-stone-400'}">
             {#if event}
               Fluid: <span class="capitalize font-medium {dimMode ? 'text-stone-200' : 'text-stone-600'}">{event.color}</span> {event.notes ? `• "${event.notes}"` : ''}
             {:else}
@@ -64,6 +64,7 @@
 
       <button
         onclick={() => { if (isExpanded) { isExpanded = false; } else { openEditor(); } }}
+        aria-expanded={isExpanded}
         class="text-xs font-medium px-3 py-1.5 rounded-xl border transition-colors cursor-pointer {event 
           ? (dimMode ? 'border-sky-800/80 text-sky-300 bg-sky-950/80 hover:bg-sky-900/80' : 'border-sky-200 text-sky-700 bg-sky-50 hover:bg-sky-100') 
           : (dimMode ? 'border-stone-700 text-stone-300 bg-stone-800 hover:bg-stone-700' : 'border-stone-200 text-stone-600 hover:bg-stone-100')}"
@@ -83,7 +84,7 @@
     {#if isExpanded}
       <div class="mt-4 pt-3 border-t {dimMode ? 'border-stone-800' : 'border-stone-100'} space-y-3 text-left">
         <div>
-          <span class="block text-[11px] font-medium uppercase tracking-wider {dimMode ? 'text-stone-400' : 'text-stone-400'} mb-1.5">
+          <span class="block text-[11px] font-medium uppercase tracking-wider {dimMode ? 'text-stone-300' : 'text-stone-400'} mb-1.5">
             Fluid Appearance
           </span>
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
@@ -107,7 +108,7 @@
         </div>
 
         <div>
-          <label for="water-break-notes" class="block text-[11px] font-medium uppercase tracking-wider {dimMode ? 'text-stone-400' : 'text-stone-400'} mb-1">
+          <label for="water-break-notes" class="block text-[11px] font-medium uppercase tracking-wider {dimMode ? 'text-stone-300' : 'text-stone-400'} mb-1">
             Notes / Details
           </label>
           <input
