@@ -1,4 +1,5 @@
 export type Intensity = 'mild' | 'moderate' | 'strong';
+export type FluidColor = 'clear' | 'pink' | 'green' | 'brown' | 'other';
 
 export interface Contraction {
   id: string;
@@ -7,6 +8,12 @@ export interface Contraction {
   durationSeconds: number; // total duration in seconds
   intervalSeconds?: number; // time in seconds from previous contraction startTime to this contraction startTime
   intensity?: Intensity;
+  notes?: string;
+}
+
+export interface WaterBreakEvent {
+  timestamp: number; // ms
+  color: FluidColor;
   notes?: string;
 }
 
@@ -140,4 +147,34 @@ export function calculateStats(contractions: Contraction[]): RollingStats {
     avgIntervalSeconds,
     is511RuleMet,
   };
+}
+
+// Generate CSV data for medical providers
+export function generateCSVReport(contractions: Contraction[], waterBreak?: WaterBreakEvent | null): string {
+  const headers = ['#', 'Start Time', 'End Time', 'Duration (seconds)', 'Interval (minutes)', 'Intensity', 'Notes'];
+  const rows: string[] = [];
+
+  rows.push(`"Swell Contraction Log - Exported ${new Date().toLocaleString()}"`);
+  if (waterBreak) {
+    const wbTime = new Date(waterBreak.timestamp).toLocaleString();
+    rows.push(`"Water Break Event: ${wbTime} | Fluid: ${waterBreak.color}${waterBreak.notes ? ` (${waterBreak.notes})` : ''}"`);
+  }
+  rows.push('');
+  rows.push(headers.join(','));
+
+  const sortedChronological = [...contractions].sort((a, b) => a.startTime - b.startTime);
+
+  sortedChronological.forEach((c, idx) => {
+    const num = idx + 1;
+    const start = `"${new Date(c.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}"`;
+    const end = `"${new Date(c.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}"`;
+    const duration = c.durationSeconds;
+    const interval = c.intervalSeconds ? (c.intervalSeconds / 60).toFixed(1) : '""';
+    const intensity = c.intensity ? `"${c.intensity}"` : '""';
+    const notes = c.notes ? `"${c.notes.replace(/"/g, '""')}"` : '""';
+
+    rows.push([num, start, end, duration, interval, intensity, notes].join(','));
+  });
+
+  return rows.join('\n');
 }

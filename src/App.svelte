@@ -1,11 +1,11 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import { Volume2, VolumeX, RotateCcw, Share2, Waves, Moon, Sun } from 'lucide-svelte';
+  import { Volume2, VolumeX, RotateCcw, Share2, Waves, Moon, Sun, Download } from 'lucide-svelte';
   import TimerHero from './lib/TimerHero.svelte';
   import QuickSummary from './lib/QuickSummary.svelte';
   import ContractionList from './lib/ContractionList.svelte';
   import GuidelinesModal from './lib/GuidelinesModal.svelte';
-  import { calculateStats, parseStoredContractions, type Contraction, type Intensity } from './types';
+  import { calculateStats, parseStoredContractions, generateCSVReport, type Contraction, type Intensity } from './types';
   import { audio } from './lib/audio';
 
   const STORAGE_KEY = 'swell_contractions';
@@ -75,6 +75,7 @@
   let soundOn = $state<boolean>(getStoredSoundPref());
   let dimMode = $state<boolean>(getStoredDimPref());
   let showCopiedToast = $state<boolean>(false);
+  let toastMessage = $state<string>('');
   let showResetModal = $state<boolean>(false);
 
   let timerInterval: ReturnType<typeof setInterval> | null = null;
@@ -288,6 +289,14 @@
     dimMode = !dimMode;
   }
 
+  function triggerToast(msg: string) {
+    toastMessage = msg;
+    showCopiedToast = true;
+    setTimeout(() => {
+      showCopiedToast = false;
+    }, 2500);
+  }
+
   async function copySummary() {
     if (contractions.length === 0) return;
     
@@ -319,13 +328,25 @@
         document.execCommand('copy');
         document.body.removeChild(textarea);
       }
-      showCopiedToast = true;
-      setTimeout(() => {
-        showCopiedToast = false;
-      }, 2500);
+      triggerToast('Log copied to clipboard!');
     } catch {
-      // fallback if clipboard fails
+      // fallback
     }
+  }
+
+  function downloadCSV() {
+    if (contractions.length === 0) return;
+    const csvContent = generateCSVReport(contractions);
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `swell-contractions-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    triggerToast('Report downloaded!');
   }
 
   onMount(() => {
@@ -405,6 +426,15 @@
           aria-label="Copy summary"
         >
           <Share2 class="w-4 h-4" />
+        </button>
+
+        <button
+          onclick={downloadCSV}
+          class="p-2 rounded-2xl border transition-colors cursor-pointer {dimMode ? 'bg-stone-800 border-stone-700 text-stone-300 hover:bg-stone-700' : 'bg-white/70 border-stone-200/80 text-stone-600 hover:text-stone-900'}"
+          title="Download CSV spreadsheet report"
+          aria-label="Download CSV"
+        >
+          <Download class="w-4 h-4" />
         </button>
       {/if}
 
@@ -502,7 +532,7 @@
   <!-- Toast Notification -->
   {#if showCopiedToast}
     <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-stone-900/90 text-white text-xs px-4 py-2.5 rounded-full shadow-lg backdrop-blur-sm">
-      Log copied to clipboard to send your doctor or partner!
+      {toastMessage}
     </div>
   {/if}
 </div>
