@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Droplet, Check, Trash2, ChevronDown, ChevronUp } from 'lucide-svelte';
-  import { formatTime, type WaterBreakEvent, type FluidColor } from '../types';
+  import { formatTime, type WaterBreakEvent, type FluidColor, type FluidAmount, type FluidOdor } from '../types';
 
   interface Props {
     event: WaterBreakEvent | null;
@@ -12,10 +12,14 @@
 
   let isExpanded = $state(false);
   let selectedColor = $state<FluidColor>('clear');
+  let selectedAmount = $state<FluidAmount>('moderate');
+  let selectedOdor = $state<FluidOdor>('odorless');
   let noteText = $state('');
 
   function openEditor() {
     selectedColor = event?.color || 'clear';
+    selectedAmount = event?.amount || 'moderate';
+    selectedOdor = event?.odor || 'odorless';
     noteText = event?.notes || '';
     isExpanded = true;
   }
@@ -24,6 +28,8 @@
     onSave({
       timestamp: event?.timestamp || Date.now(),
       color: selectedColor,
+      amount: selectedAmount,
+      odor: selectedOdor,
       notes: noteText.trim().slice(0, 280) || undefined,
     });
     isExpanded = false;
@@ -33,6 +39,8 @@
     onSave(null);
     isExpanded = false;
     selectedColor = 'clear';
+    selectedAmount = 'moderate';
+    selectedOdor = 'odorless';
     noteText = '';
   }
 </script>
@@ -54,9 +62,12 @@
           </h4>
           <p class="text-[11px] {dimMode ? 'text-stone-300' : 'text-stone-400'}">
             {#if event}
-              Fluid: <span class="capitalize font-medium {dimMode ? 'text-stone-200' : 'text-stone-600'}">{event.color}</span> {event.notes ? `• "${event.notes}"` : ''}
+              <span class="capitalize font-medium {dimMode ? 'text-stone-200' : 'text-stone-600'}">Color: {event.color}</span>
+              {#if event.amount}<span> • Amount: {event.amount}</span>{/if}
+              {#if event.odor}<span> • Odor: {event.odor}</span>{/if}
+              {#if event.notes}<span> • "{event.notes}"</span>{/if}
             {:else}
-              Track exact time and fluid color for your midwife
+              Track TACO (Time, Amount, Color, Odor) for your midwife
             {/if}
           </p>
         </div>
@@ -98,6 +109,53 @@
                 onclick={() => selectedColor = opt.key as FluidColor}
                 class="min-h-[44px] p-2 rounded-xl text-left border transition-all cursor-pointer {selectedColor === opt.key 
                   ? (dimMode ? 'border-sky-500 bg-sky-950 text-sky-200 font-medium' : 'border-sky-500 bg-sky-50/80 text-sky-900 font-medium') 
+                  : (dimMode ? 'border-stone-800 bg-stone-800/80 text-stone-300 hover:bg-stone-800' : 'border-stone-200 bg-white text-stone-600 hover:bg-stone-50')}"
+              >
+                <div class="text-xs">{opt.label}</div>
+                <div class="text-[10px] {dimMode ? 'text-stone-400' : 'text-stone-400'}">{opt.desc}</div>
+              </button>
+            {/each}
+          </div>
+        </div>
+
+        <!-- Fluid Amount (TACO: Amount) -->
+        <div>
+          <span class="block text-[11px] font-medium uppercase tracking-wider {dimMode ? 'text-stone-300' : 'text-stone-400'} mb-1.5">
+            Amount (Gush or Trickle?)
+          </span>
+          <div class="grid grid-cols-3 gap-1.5">
+            {#each [
+              { key: 'trickle', label: 'Trickle', desc: 'Small amount' },
+              { key: 'moderate', label: 'Moderate', desc: 'Steady flow' },
+              { key: 'gush', label: 'Gush', desc: 'Large amount' },
+            ] as opt}
+              <button
+                onclick={() => selectedAmount = opt.key as FluidAmount}
+                class="min-h-[44px] p-2 rounded-xl text-left border transition-all cursor-pointer {selectedAmount === opt.key 
+                  ? (dimMode ? 'border-emerald-500 bg-emerald-950 text-emerald-200 font-medium' : 'border-emerald-500 bg-emerald-50/80 text-emerald-900 font-medium') 
+                  : (dimMode ? 'border-stone-800 bg-stone-800/80 text-stone-300 hover:bg-stone-800' : 'border-stone-200 bg-white text-stone-600 hover:bg-stone-50')}"
+              >
+                <div class="text-xs">{opt.label}</div>
+                <div class="text-[10px] {dimMode ? 'text-stone-400' : 'text-stone-400'}">{opt.desc}</div>
+              </button>
+            {/each}
+          </div>
+        </div>
+
+        <!-- Fluid Odor (TACO: Odor) -->
+        <div>
+          <span class="block text-[11px] font-medium uppercase tracking-wider {dimMode ? 'text-stone-300' : 'text-stone-400'} mb-1.5">
+            Odor
+          </span>
+          <div class="grid grid-cols-2 gap-1.5">
+            {#each [
+              { key: 'odorless', label: 'Odorless', desc: 'Normal' },
+              { key: 'unusual', label: 'Unusual Odor', desc: 'Report to provider' },
+            ] as opt}
+              <button
+                onclick={() => selectedOdor = opt.key as FluidOdor}
+                class="min-h-[44px] p-2 rounded-xl text-left border transition-all cursor-pointer {selectedOdor === opt.key 
+                  ? (dimMode ? 'border-amber-500 bg-amber-950 text-amber-200 font-medium' : 'border-amber-500 bg-amber-50/80 text-amber-900 font-medium') 
                   : (dimMode ? 'border-stone-800 bg-stone-800/80 text-stone-300 hover:bg-stone-800' : 'border-stone-200 bg-white text-stone-600 hover:bg-stone-50')}"
               >
                 <div class="text-xs">{opt.label}</div>

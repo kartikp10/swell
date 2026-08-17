@@ -1,5 +1,7 @@
 export type Intensity = 'mild' | 'moderate' | 'strong';
 export type FluidColor = 'clear' | 'pink' | 'green' | 'brown' | 'other';
+export type FluidAmount = 'trickle' | 'moderate' | 'gush';
+export type FluidOdor = 'odorless' | 'unusual';
 
 export interface Contraction {
   id: string;
@@ -14,6 +16,8 @@ export interface Contraction {
 export interface WaterBreakEvent {
   timestamp: number; // ms
   color: FluidColor;
+  amount?: FluidAmount;    // trickle, moderate, or gush
+  odor?: FluidOdor;        // odorless or unusual
   notes?: string;
 }
 
@@ -157,7 +161,14 @@ export function generateCSVReport(contractions: Contraction[], waterBreak?: Wate
   rows.push(`"Swell Contraction Log - Exported ${new Date().toLocaleString()}"`);
   if (waterBreak) {
     const wbTime = new Date(waterBreak.timestamp).toLocaleString();
-    rows.push(`"Water Break Event: ${wbTime} | Fluid: ${waterBreak.color}${waterBreak.notes ? ` (${waterBreak.notes})` : ''}"`);
+    const tacoInfo = [
+      `Time: ${wbTime}`,
+      `Color: ${waterBreak.color}`,
+      waterBreak.amount ? `Amount: ${waterBreak.amount}` : null,
+      waterBreak.odor ? `Odor: ${waterBreak.odor}` : null,
+      waterBreak.notes ? `Notes: ${waterBreak.notes}` : null,
+    ].filter(Boolean).join(' | ');
+    rows.push(`"Water Break (TACO): ${tacoInfo}"`);
   }
   rows.push('');
   rows.push(headers.join(','));
